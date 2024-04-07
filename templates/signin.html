@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Coordinates</title>
+</head>
+<body>
+    <h1>Check Coordinates</h1>
+    <label for="gmail">Enter Gmail:</label>
+    <input type="email" id="gmail" name="gmail">
+    <button id="go-button">Go</button><br><br>
+    <div id="grid"></div><br>
+    <label for="dx">Enter dx:</label>
+    <input type="number" id="dx" name="dx">
+    <label for="dy">Enter dy:</label>
+    <input type="number" id="dy" name="dy"><br>
+    <button id="check-button">Check Coordinates</button>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var fetchedIcons; // Variable to store fetched icons from backend
+            var fetchedCoordinates; // Variable to store fetched coordinates from backend
+
+            // Function to generate the grid with icons
+            function generateGrid() {
+                var grid = $('#grid');
+                grid.empty(); // Clear existing grid
+                grid.css('display', 'grid'); // Show the grid
+
+                var allIcons = ['Flag1.png', 'Flag2.png', 'Flag3.png', 'Flag4.png', 'Flag5.png', 'Flag6.png', 'Flag7.png', 'Flag8.png','Flag9.png','Flag10.png','Flag11.png','Flag12.png','Flag13.png','Flag14.png','Flag15.png','Flag16.png', 'Transportation1.png', 'Transportation2.png', 'Transportation3.png', 'Transportation4.png', 'Transportation5.png', 'Transportation6.png', 
+                'Transportation7.png', 'Transportation8.png','Transportation8.png', 'Transportation9.png','Transportation10.png','Transportation11.png','Transportation12.png','Transportation13.png','Transportation14.png','Transportation15.png','Transportation16.png','Number1.png', 'Number2.png', 'Number3.png', 'Number4.png', 'Number5.png', 'Number6.png', 'Number7.png', 
+                'Number8.png','Number9.png','Number10.png','Number11.png','Number12.png','Number13.png','Number14.png','Number15.png', 'Number16.png','Alphabets1.png', 'Alphabets2.png', 'Alphabets3.png', 'Alphabets4.png', 'Alphabets5.png', 'Alphabets6.png', 'Alphabets7.png', 'Alphabets8.png'
+                ,'Alphabets9.png','Alphabets10.png','Alphabets11.png','Alphabets12.png','Alphabets13.png','Alphabets14.png','Alphabets15.png','Alphabets16.png'];
+
+    // Remove fetched icons from allIcons array
+      allIcons = allIcons.filter(function(icon) {
+        return !fetchedIcons.includes(icon);
+    });
+
+                // Loop through the grid data and create icon elements
+                for (var i = 0; i < 8; i++) {
+                    for (var j = 0; j < 8; j++) {
+                        var iconElem = $('<div class="icon"></div>');
+                        var randomIcon = allIcons[Math.floor(Math.random() * allIcons.length)]; // Select a random icon from allIcons
+                        iconElem.css('background-image', 'url(static/images/' + randomIcon + ')'); // Ensure correct path to images
+                        grid.append(iconElem);
+                    }
+                }
+
+                // Place fetched icons at their specific coordinates
+                grid.find('.icon').eq(fetchedCoordinates[0][0] * 8 + fetchedCoordinates[0][1]).addClass('fetched-icon').css('background-image', 'url(static/images/' + fetchedIcons[0] + ')'); // Ensure correct path to fetched icons
+                grid.find('.icon').eq(fetchedCoordinates[1][0] * 8 + fetchedCoordinates[1][1]).addClass('fetched-icon').css('background-image', 'url(static/images/' + fetchedIcons[1] + ')'); // Ensure correct path to fetched icons
+            }
+
+            // Handle button click to fetch icons and coordinates
+            $('#go-button').click(function() {
+                var gmail = $('#gmail').val();
+
+                // Call backend API to get fetched icons and coordinates
+                $.ajax({
+                    type: 'POST',
+                    url: '/signin',
+                    data: { gmail: gmail }, // Provide Gmail address
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            fetchedIcons = response.icons;
+                            fetchedCoordinates = response.coordinates;
+                            // Display the grid with icons and fetched icon positions
+                            generateGrid();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('An error occurred during authentication.');
+                    }
+                });
+            });
+
+           // Handle button click to check coordinates
+$('#check-button').click(function() {
+
+    
+    var dx = parseInt($('#dx').val());
+    var dy = parseInt($('#dy').val());
+
+    // Calculate the absolute differences between fetched icon positions
+    var expectedDx = Math.abs(fetchedCoordinates[1][0] - fetchedCoordinates[0][0]);
+    var expectedDy = Math.abs(fetchedCoordinates[1][1] - fetchedCoordinates[0][1]);
+
+    // Check if user-input dx and dy match fetched icon positions
+    if (dx === expectedDx && dy === expectedDy) {
+        alert('Coordinates matched. User authenticated.');
+    } else {
+        alert('Coordinates did not match. Please try again.');
+    }
+});
+        });
+    </script>
+    <style>
+        /* Add your CSS styles here */
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(8, 50px); /* Adjust column width as needed */
+            grid-template-rows: repeat(8, 50px); /* Adjust row height as needed */
+            gap: 5px; /* Adjust gap between icons */
+        }
+        .icon {
+    width: 50px;
+    height: 50px;
+    border: 1px solid black; /* Add border for visibility */
+    background-size: cover; /* Ensure the background image covers the entire icon */
+}
+        .fetched-icon {
+            background-color: lightblue; /* Highlight fetched icons */
+        }
+    </style>
+</body>
+</html>
